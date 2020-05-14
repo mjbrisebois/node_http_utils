@@ -3,6 +3,11 @@
   "version": "0.2.0",
   "description": "A collection of HTTP utilities designed to simplify server/client manangement with flexible controls",
   "main": "src/index.js",
+  "files": [
+    "README.md",
+    "src/server.js",
+    "src/client.js"
+  ],
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -15,5 +20,9 @@
   "dependencies": {
     "@whi/stdlog": "^0.3.0",
     "node-fetch": "^2.6.0"
+  },
+  "devDependencies": {
+    "chai": "^4.2.0",
+    "mocha": "^7.1.2"
   }
 }

@@ -22,10 +22,10 @@ function create ( host, defaults = {} ) {
 	    let json			= data === null ? undefined : JSON.stringify( data );
 
 	    return fetch(`${host}${url_path}${query}`, {
-		method:	method,
-		body:	json,
-		headers:	Object.assign({}, defaults.headers, headers ),
-		timeout: 1_000,
+		"method":	method,
+		"body":		json,
+		"headers":	Object.assign({}, defaults.headers, headers ),
+		"timeout":	config.timeout || defaults.timeout || 1_000,
 	    }).then(async res => {
 		if ( config.response === true )
 		    return res;
