@@ -21,6 +21,7 @@ function create ( host, defaults = {} ) {
 		: "";
 	    let json			= data === null ? undefined : JSON.stringify( data );
 
+	    log.info("%-8.8s body: %s", method, json );
 	    return fetch(`${host}${url_path}${query}`, {
 		"method":	method,
 		"body":		json,
@@ -43,8 +44,8 @@ function create ( host, defaults = {} ) {
 	async get ( url_path, query, config = {} ) {
 	    return await this.method( "get", url_path, { query, ...config } );
 	},
-	async head ( url_path, config = {} ) {
-	    return await this.method( "head", url_path, { "response": true, ...config } );
+	async head ( url_path, query, config = {} ) {
+	    return await this.method( "head", url_path, { "response": true, query, ...config } );
 	},
 	async post ( url_path, data = {}, config = {} ) {
 	    return await this.method( "post", url_path, { data, ...config } );
@@ -55,8 +56,8 @@ function create ( host, defaults = {} ) {
 	async patch ( url_path, data = {}, config = {} ) {
 	    return await this.method( "patch", url_path, { data, ...config } );
 	},
-	async del ( url_path, config = {} ) {
-	    return await this.method( "delete", url_path, config );
+	async del ( url_path, data = {}, config = {} ) {
+	    return await this.method( "delete", url_path, { data, ...config } );
 	},
     };
 };
