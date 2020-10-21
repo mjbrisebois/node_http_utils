@@ -1,6 +1,6 @@
 const path				= require('path');
 const log				= require('@whi/stdlog')(path.basename( __filename ), {
-    level: process.env.LOG_LEVEL || 'fatal',
+    level: (!__dirname.includes("/node_modules/") && process.env.LOG_LEVEL ) || 'fatal',
 });
 
 // Start simple HTTP servers
@@ -35,11 +35,14 @@ class Server extends http.Server {
 		const asset_path	= path.join( base_path, req_url.pathname );
 		const asset_ext		= path.extname( asset_path ).slice(1).toLowerCase();
 
-		const content		= await dynamic_override.call({
-		    contentType( value ) {
-			mime_type	= value;
-		    }
-		}, req_url.pathname, asset_path );
+		let content;
+		if ( typeof dynamic_override === "function" ) {
+		    content		= await dynamic_override.call({
+			contentType( value ) {
+			    mime_type	= value;
+			}
+		    }, req_url.pathname, asset_path );
+		}
 
 		if ( typeof content === "string" ) {
 		    asset_stream	= new stream.Readable();

@@ -4,42 +4,58 @@ const log				= require('@whi/stdlog')(path.basename( __filename ), {
 });
 
 const expect				= require('chai').expect;
+const fetch				= require('node-fetch');
 
 const { server, client }		= require('../../src/index.js');
 
-let test_server;
+const PORT				= 34_567;
+
+async function run_server_test ( test, port ) {
+    const test_server			= new server();
+
+    log.info("Listening on port: %s", port );
+    await test_server.listen( port );
+
+    try {
+	await test.call( test_server );
+    } finally {
+	await test_server.close();
+    }
+}
 
 function basic_tests () {
-    it("should start server and get response", async () => {
-	const PORT			= 34_567;
+    it("should serve local asset", async () => {
+	await run_server_test(async function () {
+	    this.serve_local_assets( path.resolve( __dirname, "../html/" ) );
 
-	test_server.serve_local_assets( ".", function ( request_path, default_path ) {
-	    log.info("Serving %-50.50s (default response %s)", request_path, default_path );
-	    if ( request_path === "/hello" ) {
-		this.contentType("text/html");
-		return JSON.stringify({ "hello": "World" });
-	    }
-	});
+	    const req			= await fetch(`http://localhost:${PORT}/index.html`);
+	    const resp			= await req.text();
+	    log.silly("Result: %s", resp );
 
-	log.info("Listening on port: %s", PORT );
-	test_server.listen( PORT );
+	    expect( resp		).to.have.string("Hello World");
+	}, PORT );
+    });
 
-	const fetch			= client.create(`http://localhost:${PORT}`);
-	const resp			= await fetch.get("/hello");
-	log.silly("Result: %s", JSON.stringify(resp,null,4) );
+    it("should start server and get dynamic override response", async () => {
+	await run_server_test(async function () {
+	    this.serve_local_assets( ".", function ( request_path, default_path ) {
+		log.info("Serving %-50.50s (default response %s)", request_path, default_path );
+		if ( request_path === "/hello" ) {
+		    this.contentType("text/html");
+		    return JSON.stringify({ "hello": "World" });
+		}
+	    });
 
-	expect( resp.hello		).to.equal("World");
+	    const api			= client.create(`http://localhost:${PORT}`);
+	    const resp			= await api.get("/hello");
+	    log.silly("Result: %s", JSON.stringify(resp,null,4) );
+
+	    expect( resp.hello		).to.equal("World");
+	}, PORT );
     });
 }
 
 describe("HTTP Utils Unit Tests", () => {
-
-    before("Create server", async () => {
-	test_server			= new server();
-    });
-    after("Close server", async () => {
-	await test_server.close();
-    });
 
     describe("Basic", basic_tests );
 
